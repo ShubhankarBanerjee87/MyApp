@@ -46,5 +46,24 @@ namespace MyApp.API.Controllers
 
             return Ok(result);
         }
+
+        //When its in route string then the parameter will be required to be in route string
+        [HttpGet]
+        [Route("{name}/{description}")]
+        public async Task<IActionResult> GetRoleByNameAndDescriptionAsync([FromRoute] string name, [FromRoute] string description)
+        {
+            var result = await _myAppDbContext.Roles_Master.FirstOrDefaultAsync(x => x.Name == name && x.Description == description);
+            return Ok(result);
+        }
+
+        //If we want to pass parameters to be required automatically then we can pass/take it from querry string or body 
+        [HttpGet]
+        [Route("{name}")]
+        public async Task<IActionResult> GetRoleByNameAndDescriptionFromQuerryStringAsync([FromRoute] string name, [FromQuery] string? description)
+        {
+            var result = await _myAppDbContext.Roles_Master
+                .FirstOrDefaultAsync(x => x.Name == name && (String.IsNullOrWhiteSpace(description) && x.Description == description));
+            return Ok(result);
+        }
     }
 }
