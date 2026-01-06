@@ -58,7 +58,7 @@ namespace MyApp.API.Controllers
 
         //If we want to pass parameters to be required automatically then we can pass/take it from querry string or body 
         [HttpGet]
-        [Route("{name}")]
+        [Route("GetRolesByNameAndDescription/{name}")]
         public async Task<IActionResult> GetRoleByNameAndDescriptionFromQuerryStringAsync([FromRoute] string name, [FromQuery] string? description)
         {
             //First or FirstOrDefault will return single object that matches the condition and is the first occurance
@@ -71,6 +71,17 @@ namespace MyApp.API.Controllers
 
             //There is also a way where ToList is used first and then the where is used, this is not recommended as it will fetch all the records from database and then filter it in memory
             var allResultNotRecommended = (await _myAppDbContext.Roles_Master.ToListAsync()).Where(x => x.Name == name && (String.IsNullOrWhiteSpace(description) && x.Description == description)).ToList();
+
+            return Ok(result);
+        }
+
+        //Question: Fetch the data from Db based on Id [1,2,3] etc., where this [1,2,3] is dynamic, the user provides this data as a list or array etc.
+        // Basically this is similar to SELECT * FROM Roles_Master WHERE Id IN (1,2,3)
+        [HttpPost]
+        [Route("GetRolesByIds")]
+        public async Task<IActionResult> GetRolesByIds([FromBody] List<int> ids)
+        {
+            var result = await _myAppDbContext.Roles_Master.Where(x => ids.Contains(x.Id)).ToListAsync();
 
             return Ok(result);
         }
