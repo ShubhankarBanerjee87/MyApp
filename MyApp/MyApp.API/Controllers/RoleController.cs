@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyApp.API.Data;
+using MyApp.API.DTOs;
+using MyApp.API.Entities;
 
 namespace MyApp.API.Controllers
 {
@@ -22,10 +24,45 @@ namespace MyApp.API.Controllers
             //var result = (from roles in _myAppDbContext.Roles_Master
             //             select roles).ToList();
 
-            // var result = await _myAppDbContext.Roles_Master.ToListAsync();
+            var result = await _myAppDbContext.Roles_Master
+                        .Select(x => new Role()
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                        })
+                        .ToListAsync();
 
-            var result = await (from roles in _myAppDbContext.Roles_Master
+            //OR
+
+            var resultAlternate = await _myAppDbContext.Roles_Master
+                                  .Select(x => new RoleDTO()
+                                  {
+                                      Id = x.Id,
+                                      Title = x.Name,
+                                  }).ToListAsync();
+
+            //OR
+            var resultAlternate2 = await _myAppDbContext.Roles_Master
+                      .Select(x => new 
+                      {
+                          Id = x.Id,
+                          Title = x.Name,
+                      }).ToListAsync();
+
+
+
+            var resultQuery = await (from roles in _myAppDbContext.Roles_Master
                                 select roles).ToListAsync();
+
+            //OR
+
+            var resultQuerryAlternative = await (from roles in _myAppDbContext.Roles_Master
+                                                 select new RoleDTO()
+                                                 {
+                                                        Id = roles.Id,
+                                                        Title = roles.Name,
+                                                 }).ToListAsync();
+
             return Ok(result);
         }
 

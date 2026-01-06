@@ -1,0 +1,8 @@
+﻿namespace MyApp.API.DTOs
+{
+    public class RoleDTO
+    {
+        public int Id { get; set; }
+        public string? Title { get; set; }
+    }
+}
