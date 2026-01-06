@@ -61,8 +61,17 @@ namespace MyApp.API.Controllers
         [Route("{name}")]
         public async Task<IActionResult> GetRoleByNameAndDescriptionFromQuerryStringAsync([FromRoute] string name, [FromQuery] string? description)
         {
+            //First or FirstOrDefault will return single object that matches the condition and is the first occurance
+            //Single or SingleOrDefault will return single object that matches the condition and if more than one object matches it will throw an exception
             var result = await _myAppDbContext.Roles_Master
                 .FirstOrDefaultAsync(x => x.Name == name && (String.IsNullOrWhiteSpace(description) && x.Description == description));
+
+            //If we want to get all the records that matches the condition then we can use ToList or ToListAsync along with where
+            var allResult = await _myAppDbContext.Roles_Master.Where(x => x.Name == name && (String.IsNullOrWhiteSpace(description) && x.Description == description)).ToListAsync();
+
+            //There is also a way where ToList is used first and then the where is used, this is not recommended as it will fetch all the records from database and then filter it in memory
+            var allResultNotRecommended = (await _myAppDbContext.Roles_Master.ToListAsync()).Where(x => x.Name == name && (String.IsNullOrWhiteSpace(description) && x.Description == description)).ToList();
+
             return Ok(result);
         }
     }
