@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using MyApp.API.Data;
 using MyApp.API.DTOs;
+using MyApp.API.Entities;
 
 namespace MyApp.API.Controllers
 {
@@ -115,6 +116,28 @@ namespace MyApp.API.Controllers
             //Now if i want to get the user details along with join then
 
             return Ok(user);
+        }
+
+        /// <summary>
+        /// Update in 2 hits
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateUser([FromRoute] int id, User user)
+        {
+            User? user1 = await _myAppDbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if(user1 == null)
+            {
+                return BadRequest();
+            }
+
+            user1.UserName = user.UserName;
+            await _myAppDbContext.SaveChangesAsync();
+
+            return Ok();
         }
 
     }
