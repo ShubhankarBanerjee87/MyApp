@@ -140,5 +140,29 @@ namespace MyApp.API.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// This method is use to update in single db call
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("SingleUpdate/{id}")]
+        public async Task<IActionResult> UpdateUserSingleHit([FromRoute] int id, User user)
+        {
+            User user1 = new Entities.User()
+            {
+                Id = id,
+                Email = user.Email,
+                UserName = user.UserName
+            };
+
+            _myAppDbContext.Users.Update(user1);
+
+            await _myAppDbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
     }
 }
