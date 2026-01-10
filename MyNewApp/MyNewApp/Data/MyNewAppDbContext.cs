@@ -53,11 +53,11 @@ namespace MyNewApp.Data
             // Seed initial roles or can say default data
             modelBuilder.Entity<Role>()
                 .HasData(
-                new Role { RoleId = 1, RoleTitle = "SuperAdmin", RoleDescription = "Super Administrator with full access over all organizations", CreatedAt = DateTime.UtcNow, IsActive = true },
-                new Role { RoleId = 2, RoleTitle = "OrganizationAdmin", RoleDescription = "Administrator with access to manage organization data", CreatedAt = DateTime.UtcNow, IsActive = true },
-                new Role { RoleId = 3, RoleTitle = "Faculty", RoleDescription = "Faculty connected to some organization", CreatedAt = DateTime.UtcNow, IsActive = true },
-                new Role { RoleId = 4, RoleTitle = "Student", RoleDescription = "Student connected to some organization", CreatedAt = DateTime.UtcNow, IsActive = true },
-                new Role { RoleId = 5, RoleTitle = "Guest", RoleDescription = "Guest user with limited access", CreatedAt = DateTime.UtcNow, IsActive = true }
+                new Role { Id = 1, RoleId = 1, RoleTitle = "SuperAdmin", RoleDescription = "Super Administrator with full access over all organizations", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
+                new Role { Id = 2,  RoleId = 2, RoleTitle = "OrganizationAdmin", RoleDescription = "Administrator with access to manage organization data", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
+                new Role { Id = 3, RoleId = 3, RoleTitle = "Faculty", RoleDescription = "Faculty connected to some organization", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
+                new Role { Id = 4, RoleId = 4, RoleTitle = "Student", RoleDescription = "Student connected to some organization", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
+                new Role { Id = 5, RoleId = 5, RoleTitle = "Guest", RoleDescription = "Guest user with limited access", CreatedAt = new DateTime(2026, 1, 10), IsActive = true }
                 );
         }
     }
