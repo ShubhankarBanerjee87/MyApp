@@ -7,10 +7,10 @@ namespace MyNewApp.Data
     {
 
         //DbSets for entities
-        DbSet<User> Users { get; set; } 
-        DbSet<UserDetail> UserDetails { get; set; }
-        DbSet<Role> RolesMaster { get; set; }
-        DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<User> Users { get; set; } 
+        public DbSet<UserDetail> UserDetails { get; set; }
+        public DbSet<Role> RolesMaster { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

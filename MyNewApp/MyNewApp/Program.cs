@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyNewApp.Data;
 
@@ -15,6 +16,9 @@ builder.Services.AddDbContext<MyNewAppDbContext>(
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+//Register the password hasher service
+builder.Services.AddScoped<IPasswordHasher<MyNewApp.Domain.Entities.User>, PasswordHasher<MyNewApp.Domain.Entities.User>>();
 
 var app = builder.Build();
 
