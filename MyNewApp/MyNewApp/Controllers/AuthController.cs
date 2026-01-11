@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using MyNewApp.Data;
 using MyNewApp.Domain.DTOs;
@@ -12,6 +13,7 @@ namespace MyNewApp.Controllers
     [ApiController]
     public class AuthController(MyNewAppDbContext myNewDbContext, IPasswordHasher<User> _passwordHasher) : ControllerBase
     {
+        [EnableRateLimiting("SignUp")]
         [HttpPost]
         [Route("SignUp")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto register)
@@ -73,19 +75,6 @@ namespace MyNewApp.Controllers
                 }
 
                 throw; // Re-throw if it's a different exception
-            }
-
-            catch (Exception ex)
-            {
-                //Log the exception
-
-                response = new ResponseDTO()
-                {
-                    IsSuccess = false,
-                    Message = "An error occurred while processing your request.",
-                    Data = null
-                };
-                return StatusCode(500, response);
             }
         }
 

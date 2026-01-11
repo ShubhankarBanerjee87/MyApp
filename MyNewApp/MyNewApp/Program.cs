@@ -3,8 +3,30 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using MyNewApp.Data;
 using System.Threading.RateLimiting;
+using Serilog;
+using MyNewApp.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .WriteTo.File(
+        path: "Logs/MyNewApp/log-.txt",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 15,
+        outputTemplate:
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} " +
+            "[{Level:u3}] " +
+            "{CorrelationId} " +
+            "{Message:lj}{NewLine}{Exception}"
+    ).CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 
@@ -58,6 +80,11 @@ builder.Services.AddRateLimiter(options =>
 
 
 var app = builder.Build();
+
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<ExceptionLoggingMiddleware>();
+
+app.UseRateLimiter();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
