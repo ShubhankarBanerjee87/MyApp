@@ -7,10 +7,10 @@ namespace MyNewApp.Data
     {
 
         //DbSets for entities
-        DbSet<User> Users { get; set; } 
-        DbSet<UserDetail> UserDetails { get; set; }
-        DbSet<Role> RolesMaster { get; set; }
-        DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserDetail> UserDetails { get; set; }
+        public DbSet<Role> RolesMaster { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -38,6 +38,12 @@ namespace MyNewApp.Data
                 .HasIndex(ur => new { ur.UserId, ur.RoleId })
                 .IsUnique();
 
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(rt => rt.User)
+                .WithMany(u => u.RefreshTokens)
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             //Unique constraints
             modelBuilder.Entity<User>(entity =>
             {
@@ -50,11 +56,16 @@ namespace MyNewApp.Data
                 .HasIndex(r => r.RoleTitle)
                 .IsUnique();
 
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.Token)
+                .IsUnique();
+
+
             // Seed initial roles or can say default data
             modelBuilder.Entity<Role>()
                 .HasData(
                 new Role { Id = 1, RoleId = 1, RoleTitle = "SuperAdmin", RoleDescription = "Super Administrator with full access over all organizations", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
-                new Role { Id = 2,  RoleId = 2, RoleTitle = "OrganizationAdmin", RoleDescription = "Administrator with access to manage organization data", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
+                new Role { Id = 2, RoleId = 2, RoleTitle = "OrganizationAdmin", RoleDescription = "Administrator with access to manage organization data", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
                 new Role { Id = 3, RoleId = 3, RoleTitle = "Faculty", RoleDescription = "Faculty connected to some organization", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
                 new Role { Id = 4, RoleId = 4, RoleTitle = "Student", RoleDescription = "Student connected to some organization", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
                 new Role { Id = 5, RoleId = 5, RoleTitle = "Guest", RoleDescription = "Guest user with limited access", CreatedAt = new DateTime(2026, 1, 10), IsActive = true }
