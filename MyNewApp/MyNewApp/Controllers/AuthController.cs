@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ namespace MyNewApp.Controllers
     public class AuthController(MyNewAppDbContext myNewDbContext, IPasswordHasher<User> _passwordHasher) : ControllerBase
     {
         [EnableRateLimiting("SignUp")]
+        [AllowAnonymous]
         [HttpPost]
         [Route("SignUp")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto register)
@@ -62,13 +64,13 @@ namespace MyNewApp.Controllers
                 };
 
                 //Handle Unique constraint violations
-                if (ex.InnerException?.Message.Contains("IX_User_Email") == true)
+                if (ex.InnerException?.Message.Contains("IX_Users_Email") == true)
                 {
                     response.Message = "Email is already registered.";
                     return Conflict(response);
                 }
 
-                if (ex.InnerException?.Message.Contains("IX_User_UserName") == true)
+                if (ex.InnerException?.Message.Contains("IX_Users_UserName") == true)
                 {
                     response.Message = "Username is already taken.";
                     return Conflict(response);

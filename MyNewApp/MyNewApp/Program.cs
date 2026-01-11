@@ -5,11 +5,13 @@ using MyNewApp.Data;
 using System.Threading.RateLimiting;
 using Serilog;
 using MyNewApp.Middlewares;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
+#region Serilog Configuration
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.FromLogContext()
@@ -28,8 +30,10 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Add services to the container.
+#endregion
 
+// Add services to the container.
+#region Services Registration
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<MyNewAppDbContext>(
@@ -42,8 +46,9 @@ builder.Services.AddSwaggerGen();
 
 //Register the password hasher service
 builder.Services.AddScoped<IPasswordHasher<MyNewApp.Domain.Entities.User>, PasswordHasher<MyNewApp.Domain.Entities.User>>();
+#endregion
 
-
+#region Rate Limiting Configuration
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -78,6 +83,34 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+#endregion
+
+//JWT Authentication and Authorization can be added here
+#region JWT Authentication
+
+var jwtKey = builder.Configuration["JWT:Key"];
+var jwtIssuer = builder.Configuration["JWT:Issuer"];
+var jwtAudience = builder.Configuration["JWT:Audience"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+#endregion
 
 var app = builder.Build();
 
@@ -95,6 +128,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
