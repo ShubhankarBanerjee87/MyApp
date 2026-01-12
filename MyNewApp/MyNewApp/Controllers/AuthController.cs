@@ -3,17 +3,37 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MyNewApp.Data;
 using MyNewApp.Domain.DTOs;
 using MyNewApp.Domain.Entities;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 
 namespace MyNewApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(MyNewAppDbContext myNewDbContext, IPasswordHasher<User> _passwordHasher) : ControllerBase
+    public class AuthController : ControllerBase
     {
+        private readonly IConfiguration _config;
+        private readonly IPasswordHasher<User> _passwordHasher; 
+        private readonly MyNewAppDbContext myNewDbContext;
+
+        public AuthController(IConfiguration config, MyNewAppDbContext myNewDbContext, IPasswordHasher<User> passwordHasher)
+        {
+            _config = config;
+            this.myNewDbContext = myNewDbContext;
+            _passwordHasher = passwordHasher;
+        }
+
+        /// <summary>
+        /// This method handles user registration.
+        /// </summary>
+        /// <param name="register"></param>
+        /// <returns></returns>
         [EnableRateLimiting("SignUp")]
         [AllowAnonymous]
         [HttpPost]
@@ -80,6 +100,89 @@ namespace MyNewApp.Controllers
             }
         }
 
+        /// <summary>
+        /// This method handles user login, verifies credentials, and generates JWT and refresh tokens.
+        /// </summary>
+        /// <param name="login"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [EnableRateLimiting("Login")]
+        [HttpPost]
+        [Route("Login")]
+        public async Task<IActionResult> Login(LoginDTO login)
+        {
+            int refreshTokenExpirInDaysy = int.Parse(_config["Jwt:RefreshExpiryInDays"]!);
+            var email = login.Email.Trim().ToLower();
+
+            //get the user along with roles
+            var user = await myNewDbContext.Users
+                .Include(u => u.UserRoles)!
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+
+            if (user == null)
+            {
+                return Unauthorized(new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = "Invalid email."
+                });
+            }
+
+            //check the password
+            var verifyPasswordResult = _passwordHasher.VerifyHashedPassword(user, user.Password, login.Password);
+
+            if (verifyPasswordResult == PasswordVerificationResult.Failed)
+            {
+                return Unauthorized(new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = "Invalid password."
+                });
+            }
+
+            var roles = user.UserRoles?
+            .Where(ur => ur.IsActive)
+            .Select(ur => ur.Role!.RoleTitle)
+            .ToList();
+
+            //generate jwt token
+            var accessToken = GenerateToken(user, roles);
+
+
+            //Generate refresh token
+            var refreshTokenValue = GenerateRefreshToken();
+
+            var refreshToken = new RefreshToken
+            {
+                UserId = user.Id,
+                Token = refreshTokenValue,
+                ExpiresAt = DateTime.UtcNow.AddDays(refreshTokenExpirInDaysy),
+                CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString()
+            };
+
+            myNewDbContext.RefreshTokens.Add(refreshToken);
+            await myNewDbContext.SaveChangesAsync();
+
+            var loginResponse = new LoginResponseDTO
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshTokenValue,
+                Email = user.Email,
+                UserName = user.UserName,
+                Roles = roles!,
+                AcceessTokenExpiresIn = int.Parse(_config["Jwt:ExpiryMinutes"]!)
+            };
+
+            return Ok(new ResponseDTO
+            {
+                IsSuccess = true,
+                Message = "Login successful.",
+                Data = loginResponse
+            });
+        }
+
+        #region Private methods
         private async Task<string> GenerateUserName(string email)
         {
 
@@ -95,5 +198,49 @@ namespace MyNewApp.Controllers
 
             return userName;
         }
+
+        // JWT token generator
+        private string GenerateToken(User user, IEnumerable<string> roles)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("username", user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!)
+            );
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expiryMinutes = int.Parse(_config["Jwt:ExpiryMinutes"]!);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        // Secure refresh token generator
+        private static string GenerateRefreshToken()
+        {
+            var randomBytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(64);
+            return Convert.ToBase64String(randomBytes);
+        }
+
+        #endregion
     }
 }

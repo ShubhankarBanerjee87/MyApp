@@ -12,6 +12,8 @@ namespace MyNewApp.Data
         public DbSet<Role> RolesMaster { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
