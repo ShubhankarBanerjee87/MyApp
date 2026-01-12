@@ -8,6 +8,7 @@ using MyNewApp.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +35,11 @@ builder.Host.UseSerilog();
 
 // Add services to the container.
 #region Services Registration
-builder.Services.AddControllers();
+
+// makes global authorization policy
+builder.Services.AddControllers(options =>
+    options.Filters.Add(new AuthorizeFilter())
+);
 
 builder.Services.AddDbContext<MyNewAppDbContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))

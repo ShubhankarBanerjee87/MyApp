@@ -105,6 +105,7 @@ namespace MyNewApp.Controllers
         /// </summary>
         /// <param name="login"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [EnableRateLimiting("Login")]
         [HttpPost]
         [Route("Login")]

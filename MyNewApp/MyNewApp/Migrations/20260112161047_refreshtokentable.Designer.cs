@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyNewApp.Data;
 
@@ -11,9 +12,11 @@ using MyNewApp.Data;
 namespace MyNewApp.Migrations
 {
     [DbContext(typeof(MyNewAppDbContext))]
-    partial class MyNewAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112161047_refreshtokentable")]
+    partial class refreshtokentable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
