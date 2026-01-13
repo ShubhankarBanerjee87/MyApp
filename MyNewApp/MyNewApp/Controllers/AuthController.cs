@@ -37,7 +37,7 @@ namespace MyNewApp.Controllers
         [EnableRateLimiting("SignUp")]
         [AllowAnonymous]
         [HttpPost]
-        [Route("SignUp")]
+        [Route("signup")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto register)
         {
             ResponseDTO response = new ResponseDTO();
@@ -52,7 +52,6 @@ namespace MyNewApp.Controllers
                 {
                     Email = email,
                     UserName = userName,
-                    CreatedAt = DateTime.UtcNow,
                     IsActive = true,
                     UserRoles = new List<Domain.Entities.UserRole>()
                     {
@@ -108,7 +107,7 @@ namespace MyNewApp.Controllers
         [AllowAnonymous]
         [EnableRateLimiting("Login")]
         [HttpPost]
-        [Route("Login")]
+        [Route("login")]
         public async Task<IActionResult> Login(LoginDTO login)
         {
             int refreshTokenExpirInDaysy = int.Parse(_config["Jwt:RefreshExpiryInDays"]!);

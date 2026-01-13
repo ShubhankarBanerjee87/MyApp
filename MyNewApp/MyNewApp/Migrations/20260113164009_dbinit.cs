@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MyNewApp.Migrations
 {
     /// <inheritdoc />
-    public partial class DbInit : Migration
+    public partial class dbinit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,9 +22,10 @@ namespace MyNewApp.Migrations
                     RoleId = table.Column<int>(type: "int", nullable: false),
                     RoleTitle = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -40,13 +41,41 @@ namespace MyNewApp.Migrations
                     UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedByIp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RevokedByIp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -61,11 +90,11 @@ namespace MyNewApp.Migrations
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -86,11 +115,11 @@ namespace MyNewApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false),
-                    CreatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -111,15 +140,26 @@ namespace MyNewApp.Migrations
 
             migrationBuilder.InsertData(
                 table: "RolesMaster",
-                columns: new[] { "Id", "CreatedAt", "IsActive", "RoleDescription", "RoleId", "RoleTitle", "UpdatedAt" },
+                columns: new[] { "Id", "CreatedAt", "IsActive", "RoleDescription", "RoleId", "RoleTitle", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2026, 1, 10, 15, 53, 19, 343, DateTimeKind.Utc).AddTicks(8030), true, "Super Administrator with full access over all organizations", 1, "SuperAdmin", null },
-                    { 2, new DateTime(2026, 1, 10, 15, 53, 19, 343, DateTimeKind.Utc).AddTicks(8465), true, "Administrator with access to manage organization data", 2, "OrganizationAdmin", null },
-                    { 3, new DateTime(2026, 1, 10, 15, 53, 19, 343, DateTimeKind.Utc).AddTicks(8468), true, "Faculty connected to some organization", 3, "Faculty", null },
-                    { 4, new DateTime(2026, 1, 10, 15, 53, 19, 343, DateTimeKind.Utc).AddTicks(8470), true, "Student connected to some organization", 4, "Student", null },
-                    { 5, new DateTime(2026, 1, 10, 15, 53, 19, 343, DateTimeKind.Utc).AddTicks(8472), true, "Guest user with limited access", 5, "Guest", null }
+                    { 1, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Super Administrator with full access over all organizations", 1, "SuperAdmin", null, null },
+                    { 2, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Administrator with access to manage organization data", 2, "OrganizationAdmin", null, null },
+                    { 3, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Faculty connected to some organization", 3, "Faculty", null, null },
+                    { 4, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Student connected to some organization", 4, "Student", null, null },
+                    { 5, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Guest user with limited access", 5, "Guest", null, null }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_Token",
+                table: "RefreshTokens",
+                column: "Token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RolesMaster_RoleTitle",
@@ -160,6 +200,9 @@ namespace MyNewApp.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
+
             migrationBuilder.DropTable(
                 name: "UserDetails");
 
