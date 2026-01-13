@@ -1,10 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using MyNewApp.Domain.Entities;
+using System.Security.Claims;
 
 namespace MyNewApp.Data
 {
-    public class MyNewAppDbContext(DbContextOptions options) : DbContext(options)
+    public class MyNewAppDbContext : DbContext
     {
+        private readonly IHttpContextAccessor? _httpContextAccessor;
+
+        public MyNewAppDbContext(
+            DbContextOptions<MyNewAppDbContext> options,
+            IHttpContextAccessor? httpContextAccessor = null) : base(options)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
 
         //DbSets for entities
         public DbSet<User> Users { get; set; }
@@ -62,6 +72,20 @@ namespace MyNewApp.Data
                 .HasIndex(rt => rt.Token)
                 .IsUnique();
 
+            // ---------- PREVENT CREATED FIELDS FROM UPDATE ----------
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(AuditableEntities).IsAssignableFrom(entityType.ClrType))
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property(nameof(AuditableEntities.CreatedBy))
+                        .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
+
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property(nameof(BaseEntities.CreatedAt))
+                        .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
+                }
+            }
 
             // Seed initial roles or can say default data
             modelBuilder.Entity<Role>()
@@ -73,5 +97,61 @@ namespace MyNewApp.Data
                 new Role { Id = 5, RoleId = 5, RoleTitle = "Guest", RoleDescription = "Guest user with limited access", CreatedAt = new DateTime(2026, 1, 10), IsActive = true }
                 );
         }
+
+        // ===================== SAVE CHANGES OVERRIDE =====================
+
+        public override async Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var now = DateTime.UtcNow;
+            var currentUserId = GetCurrentUserId();
+
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                if (entry.Entity is BaseEntities baseEntity)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        baseEntity.CreatedAt = now;
+                    }
+                    else if (entry.State == EntityState.Modified)
+                    {
+                        baseEntity.UpdatedAt = now;
+                        baseEntity.UpdatedBy = currentUserId;
+                    }
+                }
+
+                if (entry.Entity is AuditableEntities auditableEntity)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        auditableEntity.CreatedBy = currentUserId;
+                    }
+                }
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private long GetCurrentUserId()
+        {
+            var httpContext = _httpContextAccessor?.HttpContext;
+
+            if (httpContext == null)
+                return 0;
+
+            var user = httpContext.User;
+
+            if (user?.Identity == null || !user.Identity.IsAuthenticated)
+                return 0;
+
+            var claim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (claim == null || string.IsNullOrWhiteSpace(claim.Value))
+                return 0;
+
+            return long.Parse(claim.Value);
+        }
+
     }
 }
