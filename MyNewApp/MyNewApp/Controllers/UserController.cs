@@ -13,9 +13,24 @@ namespace MyNewApp.Controllers
     [ApiController]
     public class UserController(MyNewAppDbContext myNewDbContext) : ControllerBase
     {
+        [HttpGet]
+        [Route("profile/{username}")]
+        public async Task<IActionResult> GetUserByUserNameAsync([FromRoute] string username)
+        {
+            
+            if (user == null)
+                return NotFound(new ResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = "User not found"
+                });
+
+            else
+        }
+
         [HttpPost]
-        [Route("update-user-details")]
-        public async Task<IActionResult> UpdateUserDetails([FromBody]UserDetailsDTO userDetailsDTO)
+        [Route("details")]
+        public async Task<IActionResult> UpdateUserDetailsAsync([FromBody]UserDetailsDTO userDetailsDTO)
         {
             long userId = User.GetUserId();
 
