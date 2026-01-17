@@ -6,6 +6,7 @@ using MyNewApp.Data;
 using MyNewApp.Domain.DTOs;
 using MyNewApp.Domain.Entities;
 using MyNewApp.Helpers;
+using System.Linq;
 
 namespace MyNewApp.Controllers
 {
@@ -17,6 +18,14 @@ namespace MyNewApp.Controllers
         [Route("profile/{username}")]
         public async Task<IActionResult> GetUserByUserNameAsync([FromRoute] string username)
         {
+            long userId = User.GetUserId();
+
+            var targetUser = myNewDbContext.Users.Where(u => u.UserName == username && u.Id == userId).SingleOrDefaultAsync();
+
+            if (targetUser == null)
+                var userProfile = myNewDbContext.
+
+            if(!userIds.Contains(userId))
             
             if (user == null)
                 return NotFound(new ResponseDTO
