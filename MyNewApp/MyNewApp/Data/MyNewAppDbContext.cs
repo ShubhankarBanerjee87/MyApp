@@ -1,21 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using MyNewApp.Domain.Entities;
+using MyNewApp.Domain.Entities.Views;
 using System.Security.Claims;
 
 namespace MyNewApp.Data
 {
-    public class MyNewAppDbContext : DbContext
+    public class MyNewAppDbContext(DbContextOptions options) : DbContext(options)
     {
-        private readonly IHttpContextAccessor? _httpContextAccessor;
-
-        public MyNewAppDbContext(
-            DbContextOptions<MyNewAppDbContext> options,
-            IHttpContextAccessor? httpContextAccessor = null) : base(options)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
         //DbSets for entities
         public DbSet<User> Users { get; set; }
         public DbSet<UserDetail> UserDetails { get; set; }
@@ -23,6 +15,9 @@ namespace MyNewApp.Data
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+        //DbSets for Views
+        public DbSet<PublicProfileView> PublicProfileView { get; set; }
+        public DbSet<PrivateProfileView> PrivateProfileViews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -70,6 +65,15 @@ namespace MyNewApp.Data
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.Token)
                 .IsUnique();
+
+            //For Views 
+            modelBuilder.Entity<PublicProfileView>()
+                .HasNoKey()
+                .ToView("vw_UserPublicProfile");
+
+            modelBuilder.Entity<PrivateProfileView>()
+                .HasNoKey()
+                .ToView("vw_UserPrivateProfile");
 
             // Seed initial roles or can say default data
             modelBuilder.Entity<Role>()

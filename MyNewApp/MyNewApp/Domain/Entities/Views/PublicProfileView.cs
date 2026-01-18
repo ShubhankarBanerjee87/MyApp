@@ -1,6 +1,6 @@
 ﻿namespace MyNewApp.Domain.Entities.Views
 {
-    public class PublicProfile
+    public class PublicProfileView
     {
         public string UserName { get; set; } = null!;
         public string Email { get; set; } = null!;
