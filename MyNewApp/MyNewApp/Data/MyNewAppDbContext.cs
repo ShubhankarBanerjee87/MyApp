@@ -1,29 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using MyNewApp.Domain.Entities;
+using MyNewApp.Domain.Entities.Views;
 using System.Security.Claims;
 
 namespace MyNewApp.Data
 {
-    public class MyNewAppDbContext : DbContext
+    public class MyNewAppDbContext(DbContextOptions options) : DbContext(options)
     {
-        private readonly IHttpContextAccessor? _httpContextAccessor;
-
-        public MyNewAppDbContext(
-            DbContextOptions<MyNewAppDbContext> options,
-            IHttpContextAccessor? httpContextAccessor = null) : base(options)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
         //DbSets for entities
         public DbSet<User> Users { get; set; }
         public DbSet<UserDetail> UserDetails { get; set; }
         public DbSet<Role> RolesMaster { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
-
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+        //DbSets for Views
+        public DbSet<PublicProfileView> PublicProfileView { get; set; }
+        public DbSet<PrivateProfileView> PrivateProfileView { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,33 +53,37 @@ namespace MyNewApp.Data
             //Unique constraints
             modelBuilder.Entity<User>(entity =>
             {
+                entity.Property(e => e.UserName)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+                entity.Property(e => e.Email)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
                 entity.HasIndex(e => e.UserName).IsUnique();
                 entity.HasIndex(e => e.Email).IsUnique();
             });
 
             //Other way for unique constraints
-            modelBuilder.Entity<Role>()
-                .HasIndex(r => r.RoleTitle)
-                .IsUnique();
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.Property(r => r.RoleTitle)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+                entity.HasIndex(r => r.RoleTitle).IsUnique();
+            });
 
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.Token)
                 .IsUnique();
 
-            // ---------- PREVENT CREATED FIELDS FROM UPDATE ----------
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                if (typeof(AuditableEntities).IsAssignableFrom(entityType.ClrType))
-                {
-                    modelBuilder.Entity(entityType.ClrType)
-                        .Property(nameof(AuditableEntities.CreatedBy))
-                        .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
+            //For Views 
+            modelBuilder.Entity<PublicProfileView>()
+                .HasNoKey()
+                .ToView("vw_UserPublicProfile");
 
-                    modelBuilder.Entity(entityType.ClrType)
-                        .Property(nameof(BaseEntities.CreatedAt))
-                        .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
-                }
-            }
+            modelBuilder.Entity<PrivateProfileView>()
+                .HasNoKey()
+                .ToView("vw_UserPrivateProfile");
 
             // Seed initial roles or can say default data
             modelBuilder.Entity<Role>()
@@ -96,61 +94,6 @@ namespace MyNewApp.Data
                 new Role { Id = 4, RoleId = 4, RoleTitle = "Student", RoleDescription = "Student connected to some organization", CreatedAt = new DateTime(2026, 1, 10), IsActive = true },
                 new Role { Id = 5, RoleId = 5, RoleTitle = "Guest", RoleDescription = "Guest user with limited access", CreatedAt = new DateTime(2026, 1, 10), IsActive = true }
                 );
-        }
-
-        // ===================== SAVE CHANGES OVERRIDE =====================
-
-        public override async Task<int> SaveChangesAsync(
-            CancellationToken cancellationToken = default)
-        {
-            var now = DateTime.UtcNow;
-            var currentUserId = GetCurrentUserId();
-
-            foreach (var entry in ChangeTracker.Entries())
-            {
-                if (entry.Entity is BaseEntities baseEntity)
-                {
-                    if (entry.State == EntityState.Added)
-                    {
-                        baseEntity.CreatedAt = now;
-                    }
-                    else if (entry.State == EntityState.Modified)
-                    {
-                        baseEntity.UpdatedAt = now;
-                        baseEntity.UpdatedBy = currentUserId;
-                    }
-                }
-
-                if (entry.Entity is AuditableEntities auditableEntity)
-                {
-                    if (entry.State == EntityState.Added)
-                    {
-                        auditableEntity.CreatedBy = currentUserId;
-                    }
-                }
-            }
-
-            return await base.SaveChangesAsync(cancellationToken);
-        }
-
-        private long GetCurrentUserId()
-        {
-            var httpContext = _httpContextAccessor?.HttpContext;
-
-            if (httpContext == null)
-                return 0;
-
-            var user = httpContext.User;
-
-            if (user?.Identity == null || !user.Identity.IsAuthenticated)
-                return 0;
-
-            var claim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            if (claim == null || string.IsNullOrWhiteSpace(claim.Value))
-                return 0;
-
-            return long.Parse(claim.Value);
         }
 
     }

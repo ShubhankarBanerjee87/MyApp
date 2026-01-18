@@ -15,7 +15,6 @@ namespace MyNewApp.Domain.DTOs
     {
         [Required, EmailAddress]
         public string Email { get; set; } = null!;
-        public string? UserName { get; set; }
         [Required, MinLength(8)]
         public string Password { get; set; } = null!;
     }

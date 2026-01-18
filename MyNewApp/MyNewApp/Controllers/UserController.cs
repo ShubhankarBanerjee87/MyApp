@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyNewApp.Data;
 using MyNewApp.Domain.DTOs;
-using MyNewApp.Domain.Entities;
 using MyNewApp.Helpers;
-using System.Linq;
 
 namespace MyNewApp.Controllers
 {
@@ -18,23 +14,44 @@ namespace MyNewApp.Controllers
         [Route("profile/{username}")]
         public async Task<IActionResult> GetUserByUserNameAsync([FromRoute] string username)
         {
-            long userId = User.GetUserId();
+            (long userId,string loggedInUserName) = User.GetUserIdAndUserName();
 
-            var targetUser = myNewDbContext.Users.Where(u => u.UserName == username && u.Id == userId).SingleOrDefaultAsync();
+            bool isOwnProfile = string.Equals(
+                loggedInUserName,
+                username,
+                StringComparison.OrdinalIgnoreCase
+            );
 
-            if (targetUser == null)
-                var userProfile = myNewDbContext.
+            if (isOwnProfile)
+            {
+                var userProfile = await myNewDbContext.PrivateProfileView
+                    .AsNoTracking()
+                    .Where(u => u.UserName == username)
+                    .SingleOrDefaultAsync();
 
-            if(!userIds.Contains(userId))
-            
-            if (user == null)
-                return NotFound(new ResponseDTO
-                {
-                    IsSuccess = false,
-                    Message = "User not found"
-                });
-
+                return userProfile == null
+                           ? NotFound(new ResponseDTO
+                           {
+                               IsSuccess = false,
+                               Message = "User Profile Not Found"
+                           })
+                           : Ok(userProfile);
+            }
             else
+            {
+                var userProfile = await myNewDbContext.PublicProfileView
+                    .AsNoTracking()
+                    .Where(u => u.UserName == username)
+                    .SingleOrDefaultAsync();
+
+                return userProfile == null
+                           ? NotFound(new ResponseDTO
+                           {
+                               IsSuccess = false,
+                               Message = "User Profile Not Found"
+                           })
+                           : Ok(userProfile);
+            }
         }
 
         [HttpPost]
@@ -77,27 +94,22 @@ namespace MyNewApp.Controllers
                     DateOfBirth = userDetailsDTO.DOB,
                     Address = userDetailsDTO.Address,
                     PhoneNumber = userDetailsDTO.PhoneNumber,
+                    CreatedBy = userId,
                 };
 
                 myNewDbContext.Add(userDetail);
             }
             else
             {
-                //update 
-                //check if IsActive = 1
-                if(userDetail.IsActive)
-                {
-                    userDetail.FirstName = userDetailsDTO.FirstName;
-                    userDetail.LastName = userDetailsDTO.LastName;
-                    userDetail.PhoneNumber = userDetailsDTO.PhoneNumber;
-                    userDetail.DateOfBirth = userDetailsDTO.DOB;
-                    userDetail.Address = userDetailsDTO.Address;
-                }
-                else
-                {
-                    //Inactive user detail or user
-                    throw new Exception("Cannot update inactive user details.");
-                }
+                // update User Details and change IsActive to true if its false.
+                userDetail.FirstName = userDetailsDTO.FirstName;
+                userDetail.LastName = userDetailsDTO.LastName;
+                userDetail.PhoneNumber = userDetailsDTO.PhoneNumber;
+                userDetail.DateOfBirth = userDetailsDTO.DOB;
+                userDetail.Address = userDetailsDTO.Address;
+                userDetail.UpdatedAt = DateTime.UtcNow;
+                userDetail.UpdatedBy = userId;
+                userDetail.IsActive = true;
             }
 
             await myNewDbContext.SaveChangesAsync();
@@ -110,6 +122,5 @@ namespace MyNewApp.Controllers
                 }
             );
         }
-
     }
 }

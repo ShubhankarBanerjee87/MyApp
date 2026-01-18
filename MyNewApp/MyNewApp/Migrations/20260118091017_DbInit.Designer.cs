@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyNewApp.Data;
 
@@ -11,9 +12,11 @@ using MyNewApp.Data;
 namespace MyNewApp.Migrations
 {
     [DbContext(typeof(MyNewAppDbContext))]
-    partial class MyNewAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260118091017_DbInit")]
+    partial class DbInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,8 +105,7 @@ namespace MyNewApp.Migrations
 
                     b.Property<string>("RoleTitle")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)")
-                        .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -182,8 +184,7 @@ namespace MyNewApp.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)")
-                        .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -203,8 +204,7 @@ namespace MyNewApp.Migrations
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)")
-                        .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
