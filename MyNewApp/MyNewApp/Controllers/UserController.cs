@@ -20,21 +20,8 @@ namespace MyNewApp.Controllers
         {
             long userId = User.GetUserId();
 
-            var targetUser = myNewDbContext.Users.Where(u => u.UserName == username && u.Id == userId).SingleOrDefaultAsync();
+            var targetUser = await myNewDbContext.Users.Where(u => u.UserName == username && u.Id == userId).SingleOrDefaultAsync();
 
-            if (targetUser == null)
-                var userProfile = myNewDbContext.
-
-            if(!userIds.Contains(userId))
-            
-            if (user == null)
-                return NotFound(new ResponseDTO
-                {
-                    IsSuccess = false,
-                    Message = "User not found"
-                });
-
-            else
         }
 
         [HttpPost]
