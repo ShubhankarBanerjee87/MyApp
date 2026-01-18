@@ -44,9 +44,7 @@ namespace MyNewApp.Controllers
             try
             {
                 var email = register.Email.Trim().ToLower();
-                var userName = string.IsNullOrWhiteSpace(register.UserName)
-                    ? await GenerateUserName(email)
-                    : register.UserName.Trim();
+                var userName = await GenerateUserName(email);
 
                 var newUser = new Domain.Entities.User()
                 {
