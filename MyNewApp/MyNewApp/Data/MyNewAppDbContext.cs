@@ -17,7 +17,7 @@ namespace MyNewApp.Data
 
         //DbSets for Views
         public DbSet<PublicProfileView> PublicProfileView { get; set; }
-        public DbSet<PrivateProfileView> PrivateProfileViews { get; set; }
+        public DbSet<PrivateProfileView> PrivateProfileView { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,14 +53,24 @@ namespace MyNewApp.Data
             //Unique constraints
             modelBuilder.Entity<User>(entity =>
             {
+                entity.Property(e => e.UserName)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+                entity.Property(e => e.Email)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
                 entity.HasIndex(e => e.UserName).IsUnique();
                 entity.HasIndex(e => e.Email).IsUnique();
             });
 
             //Other way for unique constraints
-            modelBuilder.Entity<Role>()
-                .HasIndex(r => r.RoleTitle)
-                .IsUnique();
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.Property(r => r.RoleTitle)
+                      .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+                entity.HasIndex(r => r.RoleTitle).IsUnique();
+            });
 
             modelBuilder.Entity<RefreshToken>()
                 .HasIndex(rt => rt.Token)

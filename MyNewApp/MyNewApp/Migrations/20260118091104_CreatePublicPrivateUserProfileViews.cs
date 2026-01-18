@@ -35,7 +35,7 @@ namespace MyNewApp.Migrations
                     u.Email,
                     u.ProfileImage,
                     ud.FirstName,
-                    ud.LastName,
+                    ud.LastName
                 FROM Users u
                 INNER JOIN UserDetails ud ON ud.UserId = u.Id AND ud.IsActive = 1
                 WHERE u.IsActive = 1
