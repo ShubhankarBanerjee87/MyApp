@@ -22,6 +22,8 @@ namespace MyNewApp.Controllers
 
             var targetUser = await myNewDbContext.Users.Where(u => u.UserName == username && u.Id == userId).SingleOrDefaultAsync();
 
+            return Ok();
+
         }
 
         [HttpPost]

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MyNewApp.Migrations
 {
     /// <inheritdoc />
-    public partial class dbinit : Migration
+    public partial class DbInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,10 +22,11 @@ namespace MyNewApp.Migrations
                     RoleId = table.Column<int>(type: "int", nullable: false),
                     RoleTitle = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -41,10 +42,12 @@ namespace MyNewApp.Migrations
                     UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    ProfileImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,11 +63,14 @@ namespace MyNewApp.Migrations
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedByIp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RevokedByIp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -90,11 +96,11 @@ namespace MyNewApp.Migrations
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<long>(type: "bigint", nullable: true)
+                    UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -115,11 +121,11 @@ namespace MyNewApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<long>(type: "bigint", nullable: true)
+                    UpdatedBy = table.Column<long>(type: "bigint", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -140,14 +146,14 @@ namespace MyNewApp.Migrations
 
             migrationBuilder.InsertData(
                 table: "RolesMaster",
-                columns: new[] { "Id", "CreatedAt", "IsActive", "RoleDescription", "RoleId", "RoleTitle", "UpdatedAt", "UpdatedBy" },
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "IsActive", "RoleDescription", "RoleId", "RoleTitle", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Super Administrator with full access over all organizations", 1, "SuperAdmin", null, null },
-                    { 2, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Administrator with access to manage organization data", 2, "OrganizationAdmin", null, null },
-                    { 3, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Faculty connected to some organization", 3, "Faculty", null, null },
-                    { 4, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Student connected to some organization", 4, "Student", null, null },
-                    { 5, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), true, "Guest user with limited access", 5, "Guest", null, null }
+                    { 1, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), null, true, "Super Administrator with full access over all organizations", 1, "SuperAdmin", null, null },
+                    { 2, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), null, true, "Administrator with access to manage organization data", 2, "OrganizationAdmin", null, null },
+                    { 3, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), null, true, "Faculty connected to some organization", 3, "Faculty", null, null },
+                    { 4, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), null, true, "Student connected to some organization", 4, "Student", null, null },
+                    { 5, new DateTime(2026, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), null, true, "Guest user with limited access", 5, "Guest", null, null }
                 });
 
             migrationBuilder.CreateIndex(
