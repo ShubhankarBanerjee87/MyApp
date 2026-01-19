@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using MyNewApp.Domain.Entities;
 using MyNewApp.Domain.Entities.Views;
-using System.Security.Claims;
 
 namespace MyNewApp.Data
 {
