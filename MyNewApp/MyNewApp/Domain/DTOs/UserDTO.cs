@@ -1,5 +1,4 @@
-﻿using MyNewApp.Domain.Entities;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MyNewApp.Domain.DTOs
 {
