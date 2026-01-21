@@ -10,8 +10,13 @@ namespace MyNewApp.Controllers
     [ApiController]
     public class UserController(MyNewAppDbContext myNewDbContext) : ControllerBase
     {
+        /// <summary>
+        /// This method is used to get the profile of the user based on username
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
         [HttpGet]
-        [Route("profile/{username}")]
+        [Route("{username}")]
         public async Task<IActionResult> GetUserByUserNameAsync([FromRoute] string username)
         {
             (long userId,string loggedInUserName) = User.GetUserIdAndUserName();
@@ -54,8 +59,13 @@ namespace MyNewApp.Controllers
             }
         }
 
+        /// <summary>
+        /// This method is used to post user details/profile
+        /// </summary>
+        /// <param name="userDetailsDTO"></param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("details")]
+        [Route("profile")]
         public async Task<IActionResult> UpdateUserDetailsAsync([FromBody]UserDetailsDTO userDetailsDTO)
         {
             long userId = User.GetUserId();
