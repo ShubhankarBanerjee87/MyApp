@@ -17,7 +17,7 @@ namespace MyApp.API.Controllers
             _myAppDbContext = myAppDbContext;
         }
 
-        [HttpGet("")]
+        [HttpGet]
         public async Task<IActionResult> GetAllRolesAsync()
         {
             //var result = _myAppDbContext.Roles_Master.ToList();
