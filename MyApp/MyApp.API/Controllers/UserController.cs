@@ -13,7 +13,6 @@ namespace MyApp.API.Controllers
     public class UserController(MyAppDbContext _myAppDbContext) : ControllerBase
     {
         [HttpPost]
-        [Route("Add")]
         public async Task<IActionResult> AddUser(UserDTO user)
         {
 
